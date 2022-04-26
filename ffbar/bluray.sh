@@ -1,9 +1,7 @@
 #!/bin/bash
-
 # remux blu-ray BDMV data
 
 inmvi=$1
-mode=$2
 
 function checkInput() {
 	if [ ! -d "$inmvi" ]
@@ -60,12 +58,6 @@ function fgMKV() {
 	removeLoad
 }
 
-function bgMKV() {
-	echo "[info]:bg-run blu-ray decoder"
-	mkvmerge --gui-mode -o "$inmvi".mkv "$fepd" > /dev/null
-	removeLoad
-}
-
 function showProgress() {
 	echo "[info]:run blu-ray decoder"
 	while kill -0 $procID >/dev/null 2>&1
@@ -100,16 +92,6 @@ function removeLoad() {
 	rm -r "$inmvi"
 }
 
-function getRun() {
-	if [[ -z "$mode" || "$mode" != "-bg" ]]
-	then
-		fgMKV
-	elif [[ "$mode" = "-bg" ]]
-	then
-		bgMKV &
-	fi
-}
-
 checkInput
 setStream
-getRun
+fgMKV

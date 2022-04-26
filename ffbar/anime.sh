@@ -1,12 +1,11 @@
 #!/bin/bash
-
 #merge video with audio and decode anime
 
-. fflib.sh
+. ./lib/ffwrap.sh
+. ./lib/ffdb.sh
 
 inmvi="$1"
 inaud="$2"
-mode="$3"
 
 function checkInput() {
 	if [ -z "$inmvi" ]
@@ -87,34 +86,20 @@ function fgFF() {
 		setArg
 		ffmpeg "${ffarg[@]}" 2>"/tmp/ffdirty.log" &
 		procID=$!
-		((ctitr=ind+1))
+			((ctitr=ind+1))
 		showProgress
+		sumTimeTV
 	done
-	removeLoad
+	printSumTime
 	elapseTime "end"
-}
-
-function bgFF() {
-	echo "[info]:bg-run video decoder $fulltime"
-	for ind in "${!v_epd[@]}"
-	do
-		setFileName
-		setArg
-		ffmpeg "${ffarg[@]}" 2>/dev/null
-	done
+	extraMeta
 	removeLoad
 }
 
 function getRun() {
 	setOutDir
 	setStream
-if [[ -z "$mode" || "$mode" != "-bg" ]]
-then
 	fgFF
-elif [[ "$mode" = "-bg" ]]
-then
-	bgFF &
-fi
 }
 
 checkInput

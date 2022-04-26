@@ -1,7 +1,9 @@
 #!/bin/bash
 # decode avi -> mp4
 
-. fflib.sh
+. ./lib/ffwrap.sh
+. ./lib/ffdb.sh
+
 inmvi=$1
 
 function checkInput() {
@@ -39,6 +41,7 @@ function fgFF() {
     		setPrgsMeta
     		showProgress
 	elapseTime "end"
+	extraMeta
 		removeLoad
 }
 

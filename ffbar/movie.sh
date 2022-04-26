@@ -1,9 +1,11 @@
 #!/bin/bash
 #set audio track and decode movie
 
-. fflib.sh
+. ./lib/ffwrap.sh
+. ./lib/ffdb.sh
 
 inmvi=$1
+iszip="$2"
 
 function checkInput() {
 	if [ ! -f "$inmvi" ]
@@ -12,19 +14,6 @@ function checkInput() {
 		exit 1
 	fi
 	echo -e "\n[info]:start fformat movie prompt\n"
-}
-
-function parseMode() {
-	shift 1
-	for mod in "$@"
-	do
-		case $mod in
-			-zip)
-				iszip=1;;
-			-bg)	
-				isbg=1;;
-		esac
-	done
 }
 
 function setStream() {
@@ -56,26 +45,11 @@ function sizeZIP()
 	fsize=$(wc -c "$ftv" | awk '{printf "%d\n", $0/1024/1024/1024}')
 	if [ $fsize -ge 25 ]
 	then
-		echo "[info]: huge size $fsizeG start ZIP"
-		if [ -z "$isbg" ]
-		then
-			./movie.sh "$ftv" -zip
-		else
-			./movie.sh "$ftv" -zip -bg &>/dev/null
-		fi
+		echo "[info]: huge size $fsize start ZIP"
+		./movie.sh "$ftv" -zip	
 		rm -r "$inmvi"
 		exit 0
 	fi
-}
-
-function bgFF() {
-	echo "[info]:bg-run video decoder $fulltime"
-	ffmpeg "${ffarg[@]}" 2>"/dev/null" 
-	if [ -z "$iszip" ]
-	then
-		sizeZIP &>/dev/null
-	fi
-	removeLoad
 }
 
 function fgFF() {
@@ -87,9 +61,10 @@ function fgFF() {
 	elapseTime "end"
 	if [ -z "$iszip" ]
 	then
+		extraMeta
 		sizeZIP
 	fi
-		removeLoad
+	removeLoad
 }
 
 function setPrgsMeta() {
@@ -111,15 +86,8 @@ function setFileName() {
 function getRun() {
 	setFileName
 	setArg
-
-	if [ -z "$isbg" ]
-	then
-		fgFF
-	else
-		bgFF &
-	fi
+	fgFF
 }
 
 checkInput
-parseMode "$@"
 getRun

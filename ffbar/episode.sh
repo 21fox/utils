@@ -1,11 +1,10 @@
 #!/bin/bash
-
 #set audio track and decode tv episodes
 
-. fflib.sh
+. ./lib/ffwrap.sh
+. ./lib/ffdb.sh
 
 inmvi="$1"
-mode=$2
 
 function checkInput() {
 	if [ ! -d "$inmvi" ]
@@ -65,32 +64,18 @@ function fgFF() {
 		ffmpeg "${ffarg[@]}" 2>"/tmp/ffdirty.log" &
 		procID=$!
 		showProgress
+		sumTimeTV
 		((ctitr++))
 	done <<< $(ls "$inmvi")
-		removeLoad
+	printSumTime
 	elapseTime "end"
-}
-
-function bgFF() {
-	echo "[info]:bg-run video decoder $fulltime"
-	while read epd
-	do
-		setFileName
-		setArg
-		ffmpeg "${ffarg[@]}" 2>/dev/null
-	done <<< $(ls "$inmvi")
+		extraMeta
 	removeLoad
 }
 
 function getRun() {
 	setOutDir
-if [[ -z "$mode" || "$mode" != "-bg" ]]
-then
 	fgFF
-elif [[ "$mode" = "-bg" ]]
-then
-	bgFF &
-fi
 }
 
 checkInput

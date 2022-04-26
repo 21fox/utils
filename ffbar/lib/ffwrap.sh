@@ -1,8 +1,8 @@
 #!/bin/bash
-
-#decode interface functions
+# video decode progress bar
 
 outdir="/web/stor/watchtv"
+fulltimeTV=0
 
 function askStream()
 {
@@ -67,6 +67,23 @@ function readFullTime() {
 			| sed -n "s/^.*Duration: //; s/, start.*$//p"))
 	fulltime=${fulltime%.*}
 	fullsec=$(timeToSec $fulltime)
+}
+
+function sumTimeTV() {
+    tvsec=$(echo $fulltime | \
+        awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }')
+    fulltimeTV="$tvsec + $fulltimeTV"
+	fulltimeTV=$(echo $fulltimeTV | bc) 
+}
+
+function printSumTime() {
+    fulltimeTV=$( \
+    printf ' %02d:%02d:%02d\n'\
+        $((fulltimeTV/3600)) \
+        $(((fulltimeTV / 60) % 60)) \
+        $((fulltimeTV%60)) \
+    )
+    echo "[info]: overall TV time: $fulltimeTV"
 }
 
 function readNowTime() {
