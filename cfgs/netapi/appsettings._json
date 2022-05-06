@@ -1,0 +1,21 @@
+{
+  "Kestrel": {
+    "Certificates": {
+      "Default": {
+        "Path": "gotit.pfx"
+      }
+    }
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "ConnectionStrings": {
+    "CertPwd": "K8arat3_01",
+    "DbPwd": "Priprav3n0_01"
+  },
+  "AllowedHosts": "*"
+}

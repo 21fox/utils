@@ -1,0 +1,6 @@
+FROM mongo
+
+COPY RootCA.crt /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
+EXPOSE 27017

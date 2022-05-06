@@ -1,0 +1,10 @@
+FROM mcr.microsoft.com/dotnet/sdk:latest AS build
+WORKDIR /netsrc
+
+RUN apt update >> /dev/null 2>&1 && apt -y install libgdiplus >> /dev/null 2>&1
+
+COPY RootCA.crt /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+# dotnet user-secrets -p netapi.csproj set "Kestrel:Certificates:Default:Password" "***"
+ENTRYPOINT dotnet watch run -q | grep --line-buffered \
+                                    \-v 'Building...\|watch :\|^[[:space:]]*$' >> gotit.log

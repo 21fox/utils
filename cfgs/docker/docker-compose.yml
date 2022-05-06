@@ -1,0 +1,62 @@
+version: '3.3'
+
+services:
+
+    react:
+      container_name: gotit-fend
+      build:
+        context: ./react
+        dockerfile: Dockerfile
+      restart: always
+      volumes:
+        - './react:/web'
+        - './build:/home/node/build'
+      ports:
+        - 10.0.0.210:3000:3000
+      environment:
+        - TZ=Europe/Moscow
+
+    dotnet:
+      container_name: gotit-bend
+      build:
+        context: ./netapi
+        dockerfile: Dockerfile
+      restart: always
+      volumes:
+        - './netapi:/netsrc'
+        - './react/src/pagedata:/netdata'
+      ports:
+        - 10.0.0.210:5000:80
+      environment:
+        - TZ=Europe/Moscow
+
+    mongo:
+      container_name: gotit-db
+      command: ["-f", "/etc/mongod.conf"]
+      build:
+        context: ./mongo
+        dockerfile: Dockerfile
+      restart: always
+      volumes:
+        - './mongo/datadb:/data/db'
+        - './mongo/mongod.conf:/etc/mongod.conf'
+        - './mongo/ssl:/ssl'
+        - './mongo/mongod.log:/var/log/mongodb/mongod.log'
+      ports:
+        - 10.0.0.210:27017:27017
+      environment:
+        - TZ=Europe/Moscow
+
+    react-sbox:
+      container_name: sbox-fend
+      build:
+        context: ./sbox
+        dockerfile: Dockerfile
+      restart: always       
+      volumes:
+        - './sbox:/web'
+        - './build:/home/node/build'
+      ports:
+        - 10.0.0.210:3010:3010
+      environment:
+        - TZ=Europe/Moscow

@@ -28,7 +28,8 @@ function cleanTitle() {
     then
         title=$(echo $title \
             | sed -r 's/(.*[S,s][0-9][0-9]) (.*)/\1/' \
-            | sed -r 's/(.*(19|20)[0-9][0-9]) (.*)/\1/')
+            | sed -r 's/(.*(19|20)[0-9][0-9]) (.*)/\1/' \
+            | sed -r 's/ (720|1080)p.*//')
     fi
     echo "[dbg]: clean title: $title"
 }

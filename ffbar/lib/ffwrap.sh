@@ -1,6 +1,8 @@
 #!/bin/bash
 # video decode progress bar
 
+. ./lib/comm.sh
+
 outdir="/web/stor/watchtv"
 fulltimeTV=0
 
@@ -38,18 +40,10 @@ function elapseTime() {
 	then
 		endtime=$(date +%s)
 		runtime=$((endtime-startime))
-		runH=$(($runtime / 3600))
-		runM=$((($runtime / 60) % 60))
-		runS=$((runtime % 60))
-		printf '[info]: elapsed: %02d:%02d:%02d\n' $runH $runM $runS
+		runtime=$(timeToDate $runtime)
+		echo "[info]: elapsed: $runtime"
 	fi
 
-}
-
-function timeToSec() {
-	sec=$(echo $1\
-		| awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }')
-	echo "$sec"
 }
 
 function rmSlashName() {
@@ -70,19 +64,13 @@ function readFullTime() {
 }
 
 function sumTimeTV() {
-    tvsec=$(echo $fulltime | \
-        awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }')
+	tvsec=$(timeToSec $fulltime)
     fulltimeTV="$tvsec + $fulltimeTV"
 	fulltimeTV=$(echo $fulltimeTV | bc) 
 }
 
 function printSumTime() {
-    fulltimeTV=$( \
-    printf ' %02d:%02d:%02d\n'\
-        $((fulltimeTV/3600)) \
-        $(((fulltimeTV / 60) % 60)) \
-        $((fulltimeTV%60)) \
-    )
+	fulltimeTV=$(timeToDate $fulltimeTV)
     echo "[info]: overall TV time: $fulltimeTV"
 }
 

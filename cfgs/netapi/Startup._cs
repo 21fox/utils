@@ -1,0 +1,65 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
+
+// using netapi.Models;
+using Microsoft.Extensions.Configuration;
+// using Microsoft.Extensions.Options;
+
+namespace netapi
+{
+    public static class GtiConfig
+    {
+        public static IConfiguration Settings;
+    }
+    public class Startup
+    {
+        public IConfiguration Appsettings { get; set; }
+        public Startup(IConfiguration _config)
+        {
+            // access appsettings.json in any class
+            Appsettings = _config;
+            GtiConfig.Settings = Appsettings;
+        }
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "AnyCorsPolicy",
+                        builder =>
+                        {
+                            builder.WithOrigins("https://gotit.lan:3000")
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod();
+                        });
+            });
+
+            services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "netapi", Version = "v1" });
+            });
+            services.Configure<FormOptions>(lim =>
+            {
+                lim.MultipartBodyLengthLimit = 737280000;
+            });
+
+        }
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            app.UseRouting();
+            app.UseCors("AnyCorsPolicy");
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "gotit netAPI");
+            });
+        }
+    }
+}

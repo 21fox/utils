@@ -1,0 +1,97 @@
+import path from 'path';
+// import webpack from 'webpack';
+import { Configuration as WebpackConfiguration } from 'webpack';
+import { Configuration as WebpackDevServerConfiguration } from 'webpack-dev-server';
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import { readFileSync } from 'fs';
+
+interface Configuration extends WebpackConfiguration {
+  devServer?: WebpackDevServerConfiguration;
+} // https://github.com/DefinitelyTyped/DefinitelyTyped/issues/27570
+
+// const config: webpack.Configuration = {
+export const config: Configuration = {
+  target: 'web',
+  mode: 'development',
+  entry: './src/index.tsx',
+  devServer: {
+    host: '0.0.0.0',
+    port: 3000,
+    hot: true,
+    allowedHosts: ['gotit.lan'],
+    historyApiFallback: {
+      index: '/',
+    },
+    https: {
+      key: readFileSync('./ssl/gotit.key'),
+      cert: readFileSync('./ssl/gotit.crt'),
+    },
+  },
+  output: {
+    path: path.resolve('/home/node', 'build'),
+    publicPath: '/',
+    filename: 'js/[name].bundle.js',
+  },
+  devtool: 'source-map',
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'comm',
+          chunks: 'all',
+          maxSize: 10000,
+        },
+        webs: {
+          test: /[\\/]src[\\/]/,
+          name: 'web',
+          chunks: 'all',
+          minSize: 0,
+        },
+      },
+    },
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(ts|js)x?$/i,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              '@babel/preset-env',
+              '@babel/preset-react',
+              '@babel/preset-typescript',
+            ],
+          },
+        },
+      },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
+      {
+        test: /\.(jpe?g|png|gif|woff|woff2|eot|ttf|svg)(\?[a-z0-9=.]+)?$/,
+        loader: 'file-loader',
+        options: {
+          name: './img/[name].[ext]',
+        },
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
+    alias: {
+      src: path.resolve(__dirname, 'src/'),
+    },
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './src/home.html',
+      favicon: './src/base/mickey.ico',
+    }),
+  ],
+};
+
+export default config;
