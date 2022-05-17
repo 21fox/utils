@@ -1,5 +1,5 @@
 #!/bin/bash
-# database query
+# watch cinema reporting
 
 . ./lib/comm.sh
 
@@ -76,22 +76,57 @@ EOF
 }
 
 function getGroup() {
+    qMonthTemp="create table totlmonth (watched, total);"
     qMonthAll="select distinct watched from movie"
     monthTotl=$(sqlite3 -batch ./lib/cinema.db <<EOF 
 .headers off
+    $qMonthTemp
     $qMonthAll
 EOF
 )
-    gmonth="month\t\ttotal\n"
     while read mnth
     do
         qmonth=$mnth
         getTimeCol
         sumTotal
-            gmonth+="${mnth}\t\t${fulltimeTV}\n"
+        sqlite3 -batch ./lib/cinema.db \
+            "insert into totlmonth values(\"$mnth\", \"$fulltimeTV\");"
     done <<< $monthTotl
-    gmonth=${gmonth::-2}
-    echo -e "$gmonth"
+}
+
+function countMovie() {
+    getGroup
+    qMovieCount="select \
+                    mstc.watched, \
+                    coalesce(sum(seasons), 0) as seasons, \
+                    coalesce(sum(movies), 0) as movies, \
+                    ttm.total \
+                from ( \
+                    select mst.*, \
+                        case when mst.season='seasons' \
+                            then number end as 'seasons', \
+                        case when mst.season='movies' \
+                            then number end as 'movies' \
+                    from ( \
+                                select watched, \
+                                    case when eps=1 then 'movies' \
+                                    else 'seasons' end as season, \
+                                    count(id) as number \
+                                from movie\
+                                group by watched, season \
+                    ) mst \
+                ) mstc \
+                inner join totlmonth ttm \
+                    on mstc.watched = ttm.watched \
+                group by mstc.watched;"
+
+qMonthDrop="drop table if exists totlmonth"
+cnTotl=$(sqlite3 -batch ./lib/cinema.db <<EOF 
+    $qMovieCount
+    $qMonthDrop
+EOF
+)
+    echo "$cnTotl"
     exit 0
 }
 
@@ -129,7 +164,7 @@ function readArg() {
             printSumTime
             ;;
         g)
-            getGroup
+            countMovie
             ;;
         d)
             delid=$OPTARG
